@@ -1,0 +1,65 @@
+import React from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import RecordCard from './RecordCard';
+
+const RecordList = ({ records, onDeleteRecord, onGeneratePDF }) => {
+  if (records.length === 0) {
+    return null; // Don't render anything if there are no records
+  }
+
+  return (
+    <View style={styles.sectionList}>
+      <Text style={styles.sectionTitle}>📋 已录入数据</Text>
+      <FlatList
+        data={records}
+        scrollEnabled={false} // Important for nesting in a ScrollView
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <RecordCard item={item} onDelete={onDeleteRecord} />
+        )}
+      />
+      <TouchableOpacity
+        style={[styles.button, styles.pdfButton]}
+        onPress={onGeneratePDF}
+      >
+        <Text style={styles.buttonTextLarge}>📄 生成 PDF</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  sectionList: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 15,
+  },
+  button: {
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  pdfButton: {
+    backgroundColor: '#2196F3',
+    marginTop: 15,
+    paddingVertical: 14,
+  },
+  buttonTextLarge: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+
+export default RecordList;
