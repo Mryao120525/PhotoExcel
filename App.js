@@ -15,14 +15,14 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { useState as useStateExpo } from 'react';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export default function App() {
   const [majorLocation, setMajorLocation] = useState('');
   const [minorLocation, setMinorLocation] = useState('');
   const [itemName, setItemName] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [photo, setPhoto] = useState(null);
+  const [photos, setPhotos] = useState([]);
   const [records, setRecords] = useState([]);
   const [locationHistory, setLocationHistory] = useState([]);
 
@@ -39,13 +39,15 @@ export default function App() {
 
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
+        allowsEditing: false,
+        quality: 1.0,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        setPhoto(result.assets[0].uri);
+        const originalUri = result.assets[0].uri;
+        const savedUri = await saveHighResPhoto(originalUri);
+        const finalUri = savedUri || originalUri;
+        setPhotos((p) => [...p, finalUri]);
       }
     } catch (error) {
       console.error('拍照错误:', error);
@@ -66,18 +68,94 @@ export default function App() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
+        allowsEditing: false,
+        quality: 1.0,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        setPhoto(result.assets[0].uri);
+        // 支持相册多选（若设备/SDK 支持）
+        const selected = result.selected ? result.selected : result.assets;
+        const uris = await Promise.all(
+          selected.map(async (a) => {
+            const originalUri = a.uri;
+            const savedUri = await saveHighResPhoto(originalUri);
+            return savedUri || originalUri;
+          })
+        );
+        setPhotos((p) => [...p, ...uris]);
       }
     } catch (error) {
       console.error('选择照片错误:', error);
       Alert.alert('错误', '选择照片失败，请重试');
     }
+  };
+
+  // 保存高清图片到本地（documentDirectory/photos）并返回新的本地 uri
+  const saveHighResPhoto = async (uri) => {
+    try {
+      const dir = `${FileSystem.documentDirectory}photos/`;
+      const dirInfo = await FileSystem.getInfoAsync(dir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+      }
+
+      const extMatch = uri.match(/\.([a-zA-Z0-9]+)($|\?)/);
+      const ext = extMatch ? `.${extMatch[1]}` : '.jpg';
+      const fileName = `photo_${Date.now()}${ext}`;
+      const dest = dir + fileName;
+
+      // Handle iOS photo library 'ph://' URI by resolving asset localUri via MediaLibrary
+      if (uri.startsWith('ph://')) {
+        try {
+          // 尝试在运行时加载 expo-media-library（如果未安装则不会抛出打包时错误）
+          let MediaLibraryRuntime = null;
+          try {
+            MediaLibraryRuntime = require('expo-media-library');
+          } catch (reqErr) {
+            console.warn('expo-media-library 未安装，无法解析 ph:// URI。请运行 `expo install expo-media-library` 来安装。');
+          }
+
+          if (MediaLibraryRuntime) {
+            const assetId = uri.replace('ph://', '');
+            const assetInfo = await MediaLibraryRuntime.getAssetInfoAsync(assetId);
+            if (assetInfo && assetInfo.localUri) {
+              await FileSystem.copyAsync({ from: assetInfo.localUri, to: dest });
+              return dest;
+            }
+          }
+        } catch (e) {
+          console.warn('通过 MediaLibrary 解析 ph:// 失败：', e);
+        }
+      }
+
+      // 普通 file:// 本地文件
+      try {
+        if (uri.startsWith('file://')) {
+          await FileSystem.copyAsync({ from: uri, to: dest });
+          return dest;
+        }
+      } catch (e) {
+        console.warn('FileSystem.copyAsync 失败：', e);
+      }
+
+      // 远程 URL，尝试下载
+      try {
+        await FileSystem.downloadAsync(uri, dest);
+        return dest;
+      } catch (e) {
+        console.warn('FileSystem.downloadAsync 失败：', e);
+      }
+
+      return null;
+    } catch (err) {
+      console.error('保存高清照片失败:', err);
+      return null;
+    }
+  };
+
+  // 从当前选中照片列表中移除一个
+  const removePhotoAt = (index) => {
+    setPhotos((p) => p.filter((_, i) => i !== index));
   };
 
   // 确认添加记录
@@ -98,8 +176,8 @@ export default function App() {
       Alert.alert('提示', '请输入数量');
       return;
     }
-    if (!photo) {
-      Alert.alert('提示', '请拍摄或选择照片');
+    if (!photos || photos.length === 0) {
+      Alert.alert('提示', '请拍摄或选择至少一张照片');
       return;
     }
 
@@ -110,7 +188,7 @@ export default function App() {
       minorLocation,
       itemName,
       quantity,
-      photo,
+      photos,
     };
 
     setRecords([...records, newRecord]);
@@ -123,7 +201,7 @@ export default function App() {
     // 只清空物品相关字段，保留地点信息
     setItemName('');
     setQuantity('');
-    setPhoto(null);
+    setPhotos([]);
 
     Alert.alert('成功', '记录已添加');
   };
@@ -183,13 +261,20 @@ export default function App() {
     `;
 
     for (const record of records) {
-      const base64Photo = await getBase64FromUri(record.photo);
+      // 若有多张照片，将它们都转为 base64 并放在同一单元格内
+      let photosHtml = '';
+      const recPhotos = record.photos || [];
+      for (const p of recPhotos) {
+        const base64Photo = await getBase64FromUri(p);
+        photosHtml += `<img src="data:image/jpeg;base64,${base64Photo}" style="max-width:100px;max-height:100px;margin:4px;" />`;
+      }
+
       htmlContent += `
         <tr>
           <td>${record.majorLocation}</td>
           <td>${record.minorLocation}</td>
           <td>${record.itemName}</td>
-          <td><img src="data:image/jpeg;base64,${base64Photo}" /></td>
+          <td>${photosHtml}</td>
           <td>${record.quantity}</td>
         </tr>
       `;
@@ -308,15 +393,19 @@ export default function App() {
 
           {/* 照片区域 */}
           <Text style={styles.label}>照片</Text>
-          {photo ? (
-            <View style={styles.photoContainer}>
-              <Image source={{ uri: photo }} style={styles.photoPreview} />
-              <TouchableOpacity
-                style={styles.removePhotoButton}
-                onPress={() => setPhoto(null)}
-              >
-                <Text style={styles.removePhotoText}>✕ 移除</Text>
-              </TouchableOpacity>
+          {photos && photos.length > 0 ? (
+            <View style={styles.photoGrid}>
+              {photos.map((p, idx) => (
+                <View key={idx} style={styles.photoItem}>
+                  <Image source={{ uri: p }} style={styles.photoPreview} />
+                  <TouchableOpacity
+                    style={styles.removePhotoButton}
+                    onPress={() => removePhotoAt(idx)}
+                  >
+                    <Text style={styles.removePhotoText}>移除</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
             </View>
           ) : (
             <Text style={styles.noPhotoText}>还未选择照片</Text>
@@ -373,11 +462,12 @@ export default function App() {
                       <Text style={styles.recordLabel}>数量：</Text>
                       <Text style={styles.recordValue}>{item.quantity}</Text>
                     </View>
-                    {item.photo && (
-                      <Image
-                        source={{ uri: item.photo }}
-                        style={styles.recordPhoto}
-                      />
+                    {item.photos && item.photos.length > 0 && (
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                        {item.photos.map((p, i) => (
+                          <Image key={i} source={{ uri: p }} style={styles.recordPhoto} />
+                        ))}
+                      </View>
                     )}
                   </View>
                   <TouchableOpacity
@@ -511,21 +601,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+  },
+  photoItem: {
+    position: 'relative',
+    marginRight: 10,
+    marginBottom: 10,
+  },
   removePhotoButton: {
     position: 'absolute',
-    top: 5,
-    right: 5,
-    backgroundColor: 'rgba(244, 67, 54, 0.9)',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    top: 6,
+    right: 6,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
   removePhotoText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '600',
   },
   photoButtonsRow: {
     flexDirection: 'row',
