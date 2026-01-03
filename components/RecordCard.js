@@ -13,6 +13,10 @@ const RecordCard = ({ item, onDelete }) => (
         <Text style={styles.recordValue}>{item.minorLocation}</Text>
       </View>
       <View style={styles.recordRow}>
+        <Text style={styles.recordLabel}>具体名称：</Text>
+        <Text style={styles.recordValue}>{item.specificName}</Text>
+      </View>
+      <View style={styles.recordRow}>
         <Text style={styles.recordLabel}>具体类型：</Text>
         <Text style={styles.recordValue}>{item.itemName}</Text>
       </View>
@@ -60,7 +64,7 @@ const styles = StyleSheet.create({
   recordLabel: {
     fontWeight: '600',
     color: '#333',
-    width: 60,
+    width: 80,
   },
   recordValue: {
     color: '#666',

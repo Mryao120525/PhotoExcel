@@ -50,6 +50,7 @@ import RecordList from './components/RecordList';
 export default function App() {
   const [majorLocation, setMajorLocation] = useState('');
   const [minorLocation, setMinorLocation] = useState('');
+  const [specificName, setSpecificName] = useState('');
   const [itemName, setItemName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [photos, setPhotos] = useState([]);
@@ -213,7 +214,7 @@ export default function App() {
   };
 
   const handleAddRecord = () => {
-    if (!majorLocation.trim() || !minorLocation.trim() || !itemName.trim() || !quantity.trim()) {
+    if (!majorLocation.trim() || !minorLocation.trim() || !specificName.trim() || !itemName.trim() || !quantity.trim()) {
       Alert.alert('提示', '所有字段均为必填项');
       return;
     }
@@ -226,6 +227,7 @@ export default function App() {
       id: Date.now(),
       majorLocation,
       minorLocation,
+      specificName,
       itemName,
       quantity,
       photos,
@@ -237,6 +239,7 @@ export default function App() {
       setLocationHistory([...locationHistory, minorLocation]);
     }
 
+    setSpecificName('');
     setItemName('');
     setQuantity('');
     setPhotos([]);
@@ -289,6 +292,7 @@ export default function App() {
               <tr>
                 <th>景点名称</th>
                 <th>景点区域</th>
+                <th>具体名称</th>
                 <th>具体类型</th>
                 <th>照片</th>
                 <th>数量</th>
@@ -325,6 +329,7 @@ export default function App() {
         <tr>
           <td>${record.majorLocation}</td>
           <td>${record.minorLocation}</td>
+          <td>${record.specificName}</td>
           <td>${record.itemName}</td>
           <td>${photosHtml}</td>
           <td>${record.quantity}</td>
@@ -380,6 +385,8 @@ export default function App() {
         />
 
         <ItemForm
+          specificName={specificName}
+          setSpecificName={setSpecificName}
           itemName={itemName}
           setItemName={setItemName}
           quantity={quantity}

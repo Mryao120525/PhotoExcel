@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 
 const ItemForm = ({
+  specificName,
+  setSpecificName,
   itemName,
   setItemName,
   quantity,
@@ -21,6 +23,15 @@ const ItemForm = ({
 }) => (
   <View style={styles.sectionItem}>
     <Text style={styles.sectionTitle}>📦 类型录入</Text>
+
+    <Text style={styles.label}>具体名称</Text>
+    <TextInput
+      style={styles.input}
+      placeholder="请输入具体名称"
+      placeholderTextColor="#ccc"
+      value={specificName}
+      onChangeText={setSpecificName}
+    />
 
     <Text style={styles.label}>具体类型</Text>
     <TextInput
