@@ -22,6 +22,7 @@ const CaptureScreen = () => {
     editingRecordId,
     handleSaveRecord,
     handleCancelEdit,
+    handleDeleteLocationFromHistory,
   } = useContext(AppContext);
   
   const [showToast, setShowToast] = useState(false);
@@ -103,6 +104,7 @@ const CaptureScreen = () => {
           setMinorLocation={setMinorLocation}
           locationHistory={locationHistory}
           onHistoryTagPress={setMinorLocation}
+          onDeleteHistoryTag={handleDeleteLocationFromHistory}
         />
         <ItemForm
           specificName={specificName}

@@ -8,6 +8,7 @@ const LocationForm = ({
   setMinorLocation,
   locationHistory,
   onHistoryTagPress,
+  onDeleteHistoryTag,
 }) => (
   <View style={styles.sectionLocation}>
     <Text style={styles.sectionTitle}>📍 地点设置</Text>
@@ -35,13 +36,20 @@ const LocationForm = ({
         <Text style={styles.historyTitle}>快速切换历史景点区域：</Text>
         <View style={styles.tagsContainer}>
           {locationHistory.map((tag, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.historyTag}
-              onPress={() => onHistoryTagPress(tag)}
-            >
-              <Text style={styles.historyTagText}>{tag}</Text>
-            </TouchableOpacity>
+            <View key={index} style={styles.historyTagWrapper}>
+              <TouchableOpacity
+                style={styles.historyTag}
+                onPress={() => onHistoryTagPress(tag)}
+              >
+                <Text style={styles.historyTagText}>{tag}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteTagButton}
+                onPress={() => onDeleteHistoryTag(tag)}
+              >
+                <Text style={styles.deleteTagButtonText}>-</Text>
+              </TouchableOpacity>
+            </View>
           ))}
         </View>
       </View>
@@ -100,20 +108,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  historyTag: {
+  historyTagWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#2196F3',
     borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingLeft: 14,
     marginRight: 8,
     marginBottom: 8,
+  },
+  historyTag: {
+    paddingVertical: 7,
+    paddingRight: 8,
   },
   historyTagText: {
     color: '#2196F3',
     fontSize: 13,
     fontWeight: '600',
+  },
+  deleteTagButton: {
+    borderLeftWidth: 1,
+    borderLeftColor: '#2196F3',
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+  },
+  deleteTagButtonText: {
+    color: '#2196F3',
+    fontSize: 13,
+    fontWeight: 'bold',
   },
 });
 

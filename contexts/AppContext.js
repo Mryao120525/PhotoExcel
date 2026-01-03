@@ -16,6 +16,7 @@ export const AppProvider = ({ children }) => {
   // Data and UI states
   const [records, setRecords] = useState([]);
   const [locationHistory, setLocationHistory] = useState([]);
+  const [lastMajorLocation, setLastMajorLocation] = useState('');
   const [editingRecordId, setEditingRecordId] = useState(null);
   const isInitialMount = useRef(true);
   
@@ -30,6 +31,11 @@ export const AppProvider = ({ children }) => {
         const storedHistory = await AsyncStorage.getItem('locationHistory');
         if (storedHistory !== null) {
           setLocationHistory(JSON.parse(storedHistory));
+        }
+        const storedLastName = await AsyncStorage.getItem('lastMajorLocation');
+        if (storedLastName !== null) {
+          setMajorLocation(storedLastName);
+          setLastMajorLocation(storedLastName);
         }
       } catch (e) {
         console.error('Failed to load data from storage', e);
@@ -48,16 +54,18 @@ export const AppProvider = ({ children }) => {
       try {
         await AsyncStorage.setItem('records', JSON.stringify(records));
         await AsyncStorage.setItem('locationHistory', JSON.stringify(locationHistory));
+        await AsyncStorage.setItem('lastMajorLocation', lastMajorLocation);
       } catch (e) {
         console.error('Failed to save data to storage', e);
       }
     };
     saveData();
-  }, [records, locationHistory]);
+  }, [records, locationHistory, lastMajorLocation]);
 
   // --- Form & CRUD Logic ---
   const clearForm = () => {
-    setMajorLocation('');
+    // Keep majorLocation and minorLocation
+    setMajorLocation(lastMajorLocation);
     setMinorLocation('');
     setSpecificName('');
     setItemName('');
@@ -105,9 +113,17 @@ export const AppProvider = ({ children }) => {
       setRecords([...records, { id: Date.now(), ...recordData }]);
     }
     
-    if (!locationHistory.includes(minorLocation)) {
-      setLocationHistory([...locationHistory, minorLocation]);
+    // Update location history for minorLocation
+    if (minorLocation) {
+        const updatedHistory = [minorLocation, ...locationHistory.filter(l => l !== minorLocation)].slice(0, 5);
+        setLocationHistory(updatedHistory);
     }
+
+    // Save last major location name
+    if (majorLocation) {
+      setLastMajorLocation(majorLocation);
+    }
+
 
     setEditingRecordId(null);
     clearForm();
@@ -130,6 +146,10 @@ export const AppProvider = ({ children }) => {
       },
     ]);
   };
+
+  const handleDeleteLocationFromHistory = (locationToDelete) => {
+    setLocationHistory(locationHistory.filter(location => location !== locationToDelete));
+  };
   
   const value = {
     // State
@@ -148,9 +168,9 @@ export const AppProvider = ({ children }) => {
     handleCancelEdit,
     handleSaveRecord,
     handleDeleteRecord,
+    handleDeleteLocationFromHistory,
     clearForm,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
-
