@@ -12,19 +12,19 @@ const LocationForm = ({
   <View style={styles.sectionLocation}>
     <Text style={styles.sectionTitle}>📍 地点设置</Text>
 
-    <Text style={styles.label}>大地点（如故宫）</Text>
+    <Text style={styles.label}>景点名称（如故宫）</Text>
     <TextInput
       style={styles.input}
-      placeholder="请输入大地点"
+      placeholder="请输入景点名称"
       placeholderTextColor="#ccc"
       value={majorLocation}
       onChangeText={setMajorLocation}
     />
 
-    <Text style={styles.label}>小地点（如坤宁宫）</Text>
+    <Text style={styles.label}>景点区域（如坤宁宫）</Text>
     <TextInput
       style={styles.input}
-      placeholder="请输入小地点"
+      placeholder="请输入景点区域"
       placeholderTextColor="#ccc"
       value={minorLocation}
       onChangeText={setMinorLocation}
@@ -32,7 +32,7 @@ const LocationForm = ({
 
     {locationHistory.length > 0 && (
       <View style={styles.historyContainer}>
-        <Text style={styles.historyTitle}>快速切换历史小地点：</Text>
+        <Text style={styles.historyTitle}>快速切换历史景点区域：</Text>
         <View style={styles.tagsContainer}>
           {locationHistory.map((tag, index) => (
             <TouchableOpacity

@@ -283,13 +283,13 @@ export default function App() {
           </style>
         </head>
         <body>
-          <h1>巡检录入报告</h1>
+          <h1>古建筑文物记录</h1>
           <table>
             <thead>
               <tr>
-                <th>大地点</th>
-                <th>小地点</th>
-                <th>物品名称</th>
+                <th>景点名称</th>
+                <th>景点区域</th>
+                <th>具体类型</th>
                 <th>照片</th>
                 <th>数量</th>
               </tr>
@@ -346,7 +346,7 @@ export default function App() {
       });
 
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, { dialogTitle: '分享您的巡检报告' });
+        await Sharing.shareAsync(uri, { dialogTitle: '分享您的古建筑文物记录' });
       } else {
         Alert.alert('成功', `PDF 已生成到: ${uri}`);
       }

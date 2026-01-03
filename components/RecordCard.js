@@ -5,15 +5,15 @@ const RecordCard = ({ item, onDelete }) => (
   <View style={styles.recordCard}>
     <View style={styles.recordContent}>
       <View style={styles.recordRow}>
-        <Text style={styles.recordLabel}>大地点：</Text>
+        <Text style={styles.recordLabel}>景点名称：</Text>
         <Text style={styles.recordValue}>{item.majorLocation}</Text>
       </View>
       <View style={styles.recordRow}>
-        <Text style={styles.recordLabel}>小地点：</Text>
+        <Text style={styles.recordLabel}>景点区域：</Text>
         <Text style={styles.recordValue}>{item.minorLocation}</Text>
       </View>
       <View style={styles.recordRow}>
-        <Text style={styles.recordLabel}>物品：</Text>
+        <Text style={styles.recordLabel}>具体类型：</Text>
         <Text style={styles.recordValue}>{item.itemName}</Text>
       </View>
       <View style={styles.recordRow}>

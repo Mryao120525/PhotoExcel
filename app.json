@@ -15,8 +15,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "需要访问相机来拍摄巡检照片",
-        "NSPhotoLibraryUsageDescription": "需要访问相册来选择巡检照片"
+        "NSCameraUsageDescription": "需要访问相机来拍摄古建筑文物照片",
+        "NSPhotoLibraryUsageDescription": "需要访问相册来选择古建筑文物照片"
       }
     },
     "android": {

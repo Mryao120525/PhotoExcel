@@ -20,12 +20,12 @@ const ItemForm = ({
   onAddRecord,
 }) => (
   <View style={styles.sectionItem}>
-    <Text style={styles.sectionTitle}>📦 物品录入</Text>
+    <Text style={styles.sectionTitle}>📦 类型录入</Text>
 
-    <Text style={styles.label}>物品名称</Text>
+    <Text style={styles.label}>具体类型</Text>
     <TextInput
       style={styles.input}
-      placeholder="请输入物品名称"
+      placeholder="请输入具体类型"
       placeholderTextColor="#ccc"
       value={itemName}
       onChangeText={setItemName}
