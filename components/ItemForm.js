@@ -78,7 +78,7 @@ const ItemForm = ({
 
       <View style={styles.photoButtonsRow}>
         <TouchableOpacity
-          style={[styles.button, styles.cameraButton]}
+          style={[styles.button, styles.cameraButton, styles.photoButtonMargin]}
           onPress={onTakePhoto}
         >
           <Text style={styles.buttonText}>📷 拍照</Text>
@@ -164,11 +164,12 @@ const styles = StyleSheet.create({
   photoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
     marginBottom: 10,
   },
   photoItem: {
     position: 'relative',
+    marginRight: 10,
+    marginBottom: 10,
   },
   removePhotoButton: {
     position: 'absolute',
@@ -186,8 +187,10 @@ const styles = StyleSheet.create({
   },
   photoButtonsRow: {
     flexDirection: 'row',
-    gap: 10,
     marginBottom: 15,
+  },
+  photoButtonMargin: {
+    marginRight: 10,
   },
   button: {
     borderRadius: 8,

@@ -51,12 +51,15 @@ const LocationForm = ({
 
 const styles = StyleSheet.create({
   sectionLocation: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    borderLeftWidth: 5,
-    borderLeftColor: '#2196F3',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: 18,
@@ -96,7 +99,6 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
   },
   historyTag: {
     backgroundColor: '#fff',
@@ -105,6 +107,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
+    marginRight: 8,
+    marginBottom: 8,
   },
   historyTagText: {
     color: '#2196F3',

@@ -23,7 +23,7 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={[styles.button, currentPage === 1 && styles.disabledButton]}
+        style={[styles.button, currentPage === 1 ? styles.disabledButton : null]}
         onPress={handlePrev}
         disabled={currentPage === 1}
       >
@@ -33,7 +33,7 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
         第 {currentPage} 页 / 共 {totalPages} 页
       </Text>
       <TouchableOpacity
-        style={[styles.button, currentPage === totalPages && styles.disabledButton]}
+        style={[styles.button, currentPage === totalPages ? styles.disabledButton : null]}
         onPress={handleNext}
         disabled={currentPage === totalPages}
       >

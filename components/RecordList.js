@@ -59,7 +59,7 @@ const RecordList = ({
       )}
 
       <TouchableOpacity
-        style={[styles.button, styles.pdfButton, !showList && styles.disabledButton]}
+        style={[styles.button, styles.pdfButton, !showList ? styles.disabledButton : null]}
         onPress={onGeneratePDF}
         disabled={!showList}
       >
