@@ -85,18 +85,116 @@ const ArchiveScreen = () => {
     };
 
     const styles = `
-      @page { size: A4; margin: 10mm; }
-      body { font-family: Arial, sans-serif; -webkit-print-color-adjust: exact; }
-      table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-      thead { display: table-header-group; }
-      tr { page-break-inside: avoid; }
-      th, td { border: 1px solid #ccc; padding: 8px; text-align: center; word-wrap: break-word; }
-      th { background-color: #4CAF50 !important; color: white !important; font-weight: bold; }
-      tr:nth-child(even) { background-color: #f2f2f2 !important; }
-      h1 { text-align: center; font-size: 18px; }
-      img { max-width: 90px; max-height: 90px; margin: 2px; object-fit: cover; }
-      .photos-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }
-      .photos-cell { max-height: 120px; overflow: hidden; vertical-align: top; }
+      /* 标准A4页面设置 */
+      @page {
+        size: A4 portrait;
+        margin: 8mm 10mm 8mm 10mm; /* 上下8mm，左右10mm的边距，确保内容不紧贴边缘 */
+        @top-center { content: "古建筑文物记录"; font-size: 16pt; font-weight: bold; }
+        @bottom-right { content: "页码 " counter(page) " / " counter(pages); }
+      }
+      
+      /* 全局样式 */
+      body { 
+        font-family: Arial, sans-serif; 
+        font-size: 12pt; 
+        color: #333; 
+        -webkit-print-color-adjust: exact; 
+        background-color: white;
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* 表格样式 */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        margin-top: 20px;
+        page-break-inside: avoid; /* 尽量避免表格被分页切开 */
+      }
+      
+      /* 表头样式 */
+      thead { 
+        display: table-header-group; 
+        page-break-inside: avoid; 
+        page-break-after: avoid;
+      }
+      
+      /* 行样式 */
+      tr {
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+        page-break-before: auto;
+        display: table-row;
+        break-inside: avoid-page;
+      }
+      
+      /* 单元格样式 */
+      th, td {
+        border: 1px solid #000;
+        padding: 6px;
+        text-align: center;
+        word-wrap: break-word;
+        font-size: 10pt;
+        page-break-inside: avoid; /* 确保单元格内容不被分页切开 */
+      }
+      
+      /* 表头单元格 */
+      th { 
+        background-color: #4CAF50 !important; 
+        color: white !important; 
+        font-weight: bold; 
+        padding: 8px;
+      }
+      
+      /* 交替行背景色 */
+      tr:nth-child(even) { 
+        background-color: #f2f2f2 !important; 
+      }
+      
+      /* 标题样式 */
+      h1 { 
+        text-align: center; 
+        font-size: 16pt; 
+        margin-bottom: 20px;
+        color: #333;
+      }
+      
+      /* 图片样式 */
+      img {
+        max-width: 60px;
+        max-height: 60px;
+        margin: 2px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+      }
+      
+      /* 图片容器 */
+      .photos-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        padding: 4px;
+      }
+      
+      /* 图片单元格 */
+      .photos-cell {
+        min-height: 80px;
+        max-height: 100px;
+        overflow: hidden;
+        vertical-align: top;
+        padding: 4px;
+      }
+      
+      /* 调整列宽以适应A4页面 */
+      col:nth-child(1) { width: 6%; }    /* 编号 */
+      col:nth-child(2) { width: 14%; }   /* 景点名称 */
+      col:nth-child(3) { width: 14%; }   /* 景点区域 */
+      col:nth-child(4) { width: 17%; }   /* 具体名称 */
+      col:nth-child(5) { width: 17%; }   /* 具体类型 */
+      col:nth-child(6) { width: 20%; }   /* 照片 */
+      col:nth-child(7) { width: 12%; }   /* 数量 */
     `;
 
     let tableRows = '';
@@ -108,20 +206,21 @@ const ArchiveScreen = () => {
           if (ImageManipulatorRuntime) {
             const SaveFormat = ImageManipulatorRuntime.SaveFormat || ImageManipulatorRuntime.default?.SaveFormat;
             const format = SaveFormat ? SaveFormat.JPEG : 'jpeg';
+            // 调整图片大小以适应PDF，确保打印质量和表格布局
             const manipResult = await ImageManipulatorRuntime.manipulateAsync(
-              p, [{ resize: { width: 300 } }],
-              { compress: 0.7, format: format, base64: true }
+              p, [{ resize: { width: 120, height: 120 } }],
+              { compress: 0.8, format: format, base64: true, quality: 0.8 }
             );
             base64Photo = manipResult.base64;
           } else {
             base64Photo = await getBase64FromUri(p);
           }
           if(base64Photo) {
-            photosHtml += `<img src="data:image/jpeg;base64,${base64Photo}" />`;
+            photosHtml += `<img src="data:image/jpeg;base64,${base64Photo}" alt="文物照片" />`;
           }
         } catch (e) {
           console.error('Image processing/conversion failed: ', e);
-          photosHtml += '<p style="color:red;">[img err]</p>';
+          photosHtml += '<p style="color:red;font-size:8pt;">[图片加载失败]</p>';
         }
       }
       photosHtml += '</div>';
@@ -140,22 +239,50 @@ const ArchiveScreen = () => {
     }
 
     const htmlContent = `
-      <html><head><meta charset="UTF-8"><title>记录</title><style>${styles}</style></head>
-      <body><h1>古建筑文物记录</h1><table>
-      <col width="5%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="21%"><col width="10%">
-      <thead><tr><th>编号</th><th>景点名称</th><th>景点区域</th><th>具体名称</th><th>具体类型</th><th>照片</th><th>数量</th></tr></thead>
-      <tbody>${tableRows}</tbody>
-      </table></body></html>`;
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>古建筑文物记录</title>
+        <style>${styles}</style>
+      </head>
+      <body>
+        <h1>古建筑文物记录</h1>
+        <table>
+          <col><col><col><col><col><col><col>
+          <thead>
+            <tr>
+              <th>编号</th>
+              <th>景点名称</th>
+              <th>景点区域</th>
+              <th>具体名称</th>
+              <th>具体类型</th>
+              <th>照片</th>
+              <th>数量</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </body>
+      </html>`;
 
     try {
-      const { uri } = await Print.printToFileAsync({ html: htmlContent, base64: false });
+      // 设置标准A4尺寸（595x842点，即210x297毫米）
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent, 
+        base64: false,
+        width: 595,   // A4宽度（点）
+        height: 842,  // A4高度（点）
+        orientation: Print.Orientation.portrait
+      });
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, { dialogTitle: '分享您的古建筑文物记录' });
       } else {
         Alert.alert('成功', `PDF 已生成到: ${uri}`);
       }
     } catch (error) {
-      Alert.alert('错误', '生成 PDF 失败: ' + error.message);
+      console.error('PDF生成错误:', error);
+      Alert.alert('错误', '生成 PDF 失败: ' + (error.message || '未知错误'));
     }
   };
 
@@ -287,4 +414,3 @@ const styles = StyleSheet.create({
 });
 
 export default ArchiveScreen;
-
