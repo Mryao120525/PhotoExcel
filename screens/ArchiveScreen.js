@@ -248,21 +248,23 @@ const ArchiveScreen = () => {
       </head>
       <body>
         <h1>古建筑文物记录</h1>
-        <table>
-          <col><col><col><col><col><col><col>
-          <thead>
-            <tr>
-              <th>编号</th>
-              <th>景点名称</th>
-              <th>景点区域</th>
-              <th>具体名称</th>
-              <th>具体类型</th>
-              <th>照片</th>
-              <th>数量</th>
-            </tr>
-          </thead>
-          <tbody>${tableRows}</tbody>
-        </table>
+        <div class="table-container">
+          <table>
+            <col><col><col><col><col><col><col>
+            <thead>
+              <tr>
+                <th>编号</th>
+                <th>景点名称</th>
+                <th>景点区域</th>
+                <th>具体名称</th>
+                <th>具体类型</th>
+                <th>照片</th>
+                <th>数量</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
       </body>
       </html>`;
 

@@ -194,15 +194,15 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
     marginTop: 10,
   },
   cameraButton: {
@@ -217,19 +217,17 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: '#4CAF50',
-    paddingVertical: 14,
   },
   updateButton: {
     backgroundColor: '#ffc107',
-    paddingVertical: 14,
   },
   cancelButton: {
     backgroundColor: '#757575',
   },
   buttonText: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   buttonTextLarge: {
     color: '#fff',

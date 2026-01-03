@@ -47,7 +47,7 @@ const LocationForm = ({
                 style={styles.deleteTagButton}
                 onPress={() => onDeleteHistoryTag(tag)}
               >
-                <Text style={styles.deleteTagButtonText}>-</Text>
+                <Text style={styles.deleteTagButtonText}>x</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -63,6 +63,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
+    borderLeftWidth: 5,
+    borderLeftColor: '#2196F3',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
