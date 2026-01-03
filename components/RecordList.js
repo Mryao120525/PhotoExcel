@@ -1,45 +1,67 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import RecordCard from './RecordCard';
 import Pagination from './Pagination';
 
 const RecordList = ({
   records,
   onDeleteRecord,
+  onEditRecord,
   onGeneratePDF,
   totalRecords,
   recordsPerPage,
   currentPage,
   onPageChange,
+  searchQuery,
+  onSearchQueryChange,
 }) => {
-  if (records.length === 0 && totalRecords === 0) {
-    return null; // Don't render anything if there are no records
-  }
+  const showList = totalRecords > 0;
 
   return (
     <View style={styles.sectionList}>
       <Text style={styles.sectionTitle}>📋 已录入数据</Text>
-      {records.length > 0 ? (
-        <FlatList
-          data={records}
-          scrollEnabled={false} // Important for nesting in a ScrollView
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <RecordCard item={item} onDelete={onDeleteRecord} />
-          )}
-        />
-      ) : (
-        <Text style={styles.noRecordsText}>当前页无数据</Text>
-      )}
-      <Pagination
-        totalItems={totalRecords}
-        itemsPerPage={recordsPerPage}
-        currentPage={currentPage}
-        onPageChange={onPageChange}
+
+      <TextInput
+        style={styles.searchInput}
+        placeholder="按名称或地点搜索..."
+        placeholderTextColor="#aaa"
+        value={searchQuery}
+        onChangeText={onSearchQueryChange}
       />
+
+      {showList ? (
+        <>
+          {records.length > 0 ? (
+            <FlatList
+              data={records}
+              scrollEnabled={false}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <RecordCard
+                  item={item}
+                  onDelete={onDeleteRecord}
+                  onEdit={onEditRecord}
+                />
+              )}
+            />
+          ) : (
+            <Text style={styles.noRecordsText}>没有找到匹配的记录</Text>
+          )}
+          <Pagination
+            totalItems={totalRecords}
+            itemsPerPage={recordsPerPage}
+            currentPage={currentPage}
+            onPageChange={onPageChange}
+          />
+        </>
+      ) : (
+         <Text style={styles.noRecordsText}>还没有任何记录，请添加。</Text>
+      )}
+
       <TouchableOpacity
-        style={[styles.button, styles.pdfButton]}
+        style={[styles.button, styles.pdfButton, !showList && styles.disabledButton]}
         onPress={onGeneratePDF}
+        disabled={!showList}
       >
         <Text style={styles.buttonTextLarge}>📄 生成 PDF</Text>
       </TouchableOpacity>
@@ -57,10 +79,22 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 15,
   },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#333',
+    backgroundColor: '#fafafa',
+    marginBottom: 20,
+  },
   noRecordsText: {
     textAlign: 'center',
     color: '#666',
     marginVertical: 20,
+    fontStyle: 'italic',
   },
   button: {
     borderRadius: 8,
@@ -78,6 +112,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#2196F3',
     marginTop: 15,
     paddingVertical: 14,
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
   },
   buttonTextLarge: {
     color: '#fff',

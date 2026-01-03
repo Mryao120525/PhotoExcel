@@ -19,82 +19,97 @@ const ItemForm = ({
   onTakePhoto,
   onPickPhoto,
   onRemovePhoto,
-  onAddRecord,
-}) => (
-  <View style={styles.sectionItem}>
-    <Text style={styles.sectionTitle}>📦 类型录入</Text>
+  onSaveRecord,
+  editingRecordId,
+  onCancelEdit,
+}) => {
+  const isEditing = editingRecordId !== null;
 
-    <Text style={styles.label}>具体名称</Text>
-    <TextInput
-      style={styles.input}
-      placeholder="请输入具体名称"
-      placeholderTextColor="#ccc"
-      value={specificName}
-      onChangeText={setSpecificName}
-    />
+  return (
+    <View style={styles.sectionItem}>
+      <Text style={styles.sectionTitle}>{isEditing ? '📝 编辑记录' : '📦 类型录入'}</Text>
 
-    <Text style={styles.label}>具体类型</Text>
-    <TextInput
-      style={styles.input}
-      placeholder="请输入具体类型"
-      placeholderTextColor="#ccc"
-      value={itemName}
-      onChangeText={setItemName}
-    />
+      <Text style={styles.label}>具体名称</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="请输入具体名称"
+        placeholderTextColor="#ccc"
+        value={specificName}
+        onChangeText={setSpecificName}
+      />
 
-    <Text style={styles.label}>数量</Text>
-    <TextInput
-      style={styles.input}
-      placeholder="请输入数量"
-      placeholderTextColor="#ccc"
-      value={quantity}
-      onChangeText={setQuantity}
-      keyboardType="number-pad"
-    />
+      <Text style={styles.label}>具体类型</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="请输入具体类型"
+        placeholderTextColor="#ccc"
+        value={itemName}
+        onChangeText={setItemName}
+      />
 
-    <Text style={styles.label}>照片</Text>
-    {photos && photos.length > 0 ? (
-      <View style={styles.photoGrid}>
-        {photos.map((p, idx) => (
-          <View key={idx} style={styles.photoItem}>
-            <Image source={{ uri: p }} style={styles.photoPreview} />
-            <TouchableOpacity
-              style={styles.removePhotoButton}
-              onPress={() => onRemovePhoto(idx)}
-            >
-              <Text style={styles.removePhotoText}>移除</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+      <Text style={styles.label}>数量</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="请输入数量"
+        placeholderTextColor="#ccc"
+        value={quantity}
+        onChangeText={setQuantity}
+        keyboardType="number-pad"
+      />
+
+      <Text style={styles.label}>照片</Text>
+      {photos && photos.length > 0 ? (
+        <View style={styles.photoGrid}>
+          {photos.map((p, idx) => (
+            <View key={idx} style={styles.photoItem}>
+              <Image source={{ uri: p }} style={styles.photoPreview} />
+              <TouchableOpacity
+                style={styles.removePhotoButton}
+                onPress={() => onRemovePhoto(idx)}
+              >
+                <Text style={styles.removePhotoText}>移除</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <Text style={styles.noPhotoText}>还未选择照片</Text>
+      )}
+
+      <View style={styles.photoButtonsRow}>
+        <TouchableOpacity
+          style={[styles.button, styles.cameraButton]}
+          onPress={onTakePhoto}
+        >
+          <Text style={styles.buttonText}>📷 拍照</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.galleryButton]}
+          onPress={onPickPhoto}
+        >
+          <Text style={styles.buttonText}>🖼 相册</Text>
+        </TouchableOpacity>
       </View>
-    ) : (
-      <Text style={styles.noPhotoText}>还未选择照片</Text>
-    )}
-
-    <View style={styles.photoButtonsRow}>
-      <TouchableOpacity
-        style={[styles.button, styles.cameraButton]}
-        onPress={onTakePhoto}
-      >
-        <Text style={styles.buttonText}>📷 拍照</Text>
-      </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.button, styles.galleryButton]}
-        onPress={onPickPhoto}
+        style={[styles.button, isEditing ? styles.updateButton : styles.addButton]}
+        onPress={onSaveRecord}
       >
-        <Text style={styles.buttonText}>🖼 相册</Text>
+        <Text style={styles.buttonTextLarge}>{isEditing ? '✓ 更新记录' : '✓ 确认添加'}</Text>
       </TouchableOpacity>
+      
+      {isEditing && (
+        <TouchableOpacity
+          style={[styles.button, styles.cancelButton]}
+          onPress={onCancelEdit}
+        >
+          <Text style={styles.buttonText}>✗ 取消编辑</Text>
+        </TouchableOpacity>
+      )}
     </View>
-
-    <TouchableOpacity
-      style={[styles.button, styles.addButton]}
-      onPress={onAddRecord}
-    >
-      <Text style={styles.buttonTextLarge}>✓ 确认添加</Text>
-    </TouchableOpacity>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   sectionItem: {
@@ -185,19 +200,28 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 3,
     elevation: 2,
+    marginTop: 10,
   },
   cameraButton: {
     flex: 1,
     backgroundColor: '#FF9800',
+    marginTop: 0,
   },
   galleryButton: {
     flex: 1,
     backgroundColor: '#9C27B0',
+    marginTop: 0,
   },
   addButton: {
     backgroundColor: '#4CAF50',
-    marginTop: 10,
     paddingVertical: 14,
+  },
+  updateButton: {
+    backgroundColor: '#ffc107',
+    paddingVertical: 14,
+  },
+  cancelButton: {
+    backgroundColor: '#757575',
   },
   buttonText: {
     color: '#fff',

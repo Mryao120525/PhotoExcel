@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
-const RecordCard = ({ item, onDelete }) => (
+const RecordCard = ({ item, onDelete, onEdit }) => (
   <View style={styles.recordCard}>
     <View style={styles.recordContent}>
       <View style={styles.recordRow}>
@@ -32,12 +32,20 @@ const RecordCard = ({ item, onDelete }) => (
         </View>
       )}
     </View>
-    <TouchableOpacity
-      style={styles.deleteButton}
-      onPress={() => onDelete(item.id)}
-    >
-      <Text style={styles.deleteButtonText}>删除</Text>
-    </TouchableOpacity>
+    <View style={styles.actionsContainer}>
+      <TouchableOpacity
+        style={[styles.actionButton, styles.editButton]}
+        onPress={() => onEdit(item.id)}
+      >
+        <Text style={styles.actionButtonText}>编辑</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.actionButton, styles.deleteButton]}
+        onPress={() => onDelete(item.id)}
+      >
+        <Text style={styles.actionButtonText}>删除</Text>
+      </TouchableOpacity>
+    </View>
   </View>
 );
 
@@ -51,7 +59,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   recordContent: {
     flex: 1,
@@ -77,15 +85,26 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
   },
-  deleteButton: {
-    backgroundColor: '#f44336',
+  actionsContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+  },
+  actionButton: {
     borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    width: 60,
+    marginVertical: 5,
   },
-  deleteButtonText: {
+  editButton: {
+    backgroundColor: '#ffc107',
+  },
+  deleteButton: {
+    backgroundColor: '#f44336',
+  },
+  actionButtonText: {
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
