@@ -65,7 +65,7 @@ export const AppProvider = ({ children }) => {
     setPhotos([]);
   };
 
-  const handleStartEdit = (id, scrollRef) => {
+  const handleStartEdit = (id, scrollRef = null) => {
     const recordToEdit = records.find((r) => r.id === id);
     if (recordToEdit) {
       setMajorLocation(recordToEdit.majorLocation);
@@ -102,7 +102,7 @@ export const AppProvider = ({ children }) => {
     if (editingRecordId) {
       setRecords(records.map((r) => (r.id === editingRecordId ? { ...r, ...recordData } : r)));
     } else {
-      setRecords([{ id: Date.now(), ...recordData }, ...records]);
+      setRecords([...records, { id: Date.now(), ...recordData }]);
     }
     
     if (!locationHistory.includes(minorLocation)) {

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const RecordCard = ({ item, onDelete, onEdit }) => {
+const RecordCard = ({ item, index, onDelete, onEdit }) => {
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
@@ -15,14 +15,19 @@ const RecordCard = ({ item, onDelete, onEdit }) => {
 
   return (
     <View style={styles.card}>
-      <Image
-        source={imageSource}
-        style={styles.photo}
-      />
-      <View style={styles.infoContainer}>
-        <Text style={styles.title} numberOfLines={1}>{item.specificName}</Text>
-        <Text style={styles.subtitle} numberOfLines={1}>{item.majorLocation} / {item.minorLocation}</Text>
-        <Text style={styles.timestamp}>{formatTimestamp(item.id)}</Text>
+      <View style={styles.mainContainer}>
+        <View style={styles.indexContainer}>
+          <Text style={styles.indexText}>{index}</Text>
+        </View>
+        <Image
+          source={imageSource}
+          style={styles.photo}
+        />
+        <View style={styles.infoContainer}>
+          <Text style={styles.title} numberOfLines={1}>{item.specificName}</Text>
+          <Text style={styles.subtitle} numberOfLines={1}>{item.majorLocation} / {item.minorLocation}</Text>
+          <Text style={styles.timestamp}>{formatTimestamp(item.id)}</Text>
+        </View>
       </View>
       <View style={styles.actionsContainer}>
         <TouchableOpacity onPress={() => onEdit(item.id)} style={styles.actionButton}>
@@ -44,11 +49,28 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+  },
+  mainContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  indexContainer: {
+    width: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  indexText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
   },
   photo: {
     width: 80,

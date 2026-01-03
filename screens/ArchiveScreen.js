@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { AppContext } from '../contexts/AppContext';
 import RecordCard from '../components/RecordCard';
 
@@ -28,8 +28,19 @@ const ArchiveScreen = () => {
 
   const filteredRecords = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    if (!query) return records;
-    return records.filter(record =>
+    
+    let sortedRecords = [...records].sort((a, b) => b.id - a.id);
+
+    let indexedRecords = sortedRecords.map((record, index) => ({
+      ...record,
+      originalIndex: index
+    }));
+
+    if (!query) {
+      return indexedRecords;
+    }
+
+    return indexedRecords.filter(record =>
       record.majorLocation.toLowerCase().includes(query) ||
       record.minorLocation.toLowerCase().includes(query) ||
       record.specificName.toLowerCase().includes(query) ||
@@ -47,7 +58,7 @@ const ArchiveScreen = () => {
   };
   
   const handleGeneratePDF = async () => {
-    if (records.length === 0) {
+    if (filteredRecords.length === 0) {
       Alert.alert('提示', '暂无数据，无法生成 PDF');
       return;
     }
@@ -89,7 +100,7 @@ const ArchiveScreen = () => {
     `;
 
     let tableRows = '';
-    for (const record of records) {
+    for (const record of filteredRecords) {
       let photosHtml = '<div class="photos-container">';
       for (const p of record.photos || []) {
         try {
@@ -117,6 +128,7 @@ const ArchiveScreen = () => {
 
       tableRows += `
         <tr>
+          <td>${record.originalIndex + 1}</td>
           <td>${record.majorLocation}</td>
           <td>${record.minorLocation}</td>
           <td>${record.specificName}</td>
@@ -130,8 +142,8 @@ const ArchiveScreen = () => {
     const htmlContent = `
       <html><head><meta charset="UTF-8"><title>记录</title><style>${styles}</style></head>
       <body><h1>古建筑文物记录</h1><table>
-      <col width="18%"><col width="18%"><col width="18%"><col width="18%"><col width="20%"><col width="8%">
-      <thead><tr><th>景点名称</th><th>景点区域</th><th>具体名称</th><th>具体类型</th><th>照片</th><th>数量</th></tr></thead>
+      <col width="5%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="21%"><col width="10%">
+      <thead><tr><th>编号</th><th>景点名称</th><th>景点区域</th><th>具体名称</th><th>具体类型</th><th>照片</th><th>数量</th></tr></thead>
       <tbody>${tableRows}</tbody>
       </table></body></html>`;
 
@@ -151,13 +163,6 @@ const ArchiveScreen = () => {
     filteredRecords.slice(0, visibleCount),
     [filteredRecords, visibleCount]
   );
-  
-  useFocusEffect(
-    React.useCallback(() => {
-      // Reset visible items when tab is focused
-      setVisibleCount(ITEMS_PER_PAGE);
-    }, [])
-  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -176,12 +181,21 @@ const ArchiveScreen = () => {
             </TouchableOpacity>
         </View>
 
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalText}>总数据量: {filteredRecords.length}</Text>
+        </View>
+
         <FlatList
           ref={scrollViewRef}
           data={recordsToShow}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <RecordCard item={item} onDelete={handleDeleteRecord} onEdit={onEdit} />
+            <RecordCard 
+              item={item} 
+              index={item.originalIndex + 1} 
+              onDelete={handleDeleteRecord} 
+              onEdit={onEdit} 
+            />
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -217,6 +231,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDEDED',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  totalContainer: {
+    paddingBottom: 10,
+  },
+  totalText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
   },
   searchInput: {
     flex: 1,
