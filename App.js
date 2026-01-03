@@ -56,7 +56,9 @@ export default function App() {
   const [photos, setPhotos] = useState([]);
   const [records, setRecords] = useState([]);
   const [locationHistory, setLocationHistory] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const isInitialMount = useRef(true);
+  const recordsPerPage = 10;
 
   // Load data from storage on app start
   useEffect(() => {
@@ -233,11 +235,17 @@ export default function App() {
       photos,
     };
 
-    setRecords([...records, newRecord]);
+    const updatedRecords = [...records, newRecord];
+    setRecords(updatedRecords);
 
     if (!locationHistory.includes(minorLocation)) {
       setLocationHistory([...locationHistory, minorLocation]);
     }
+
+    // Go to the last page where the new record is
+    const totalPages = Math.ceil(updatedRecords.length / recordsPerPage);
+    setCurrentPage(totalPages);
+
 
     setSpecificName('');
     setItemName('');
@@ -257,7 +265,13 @@ export default function App() {
       {
         text: '删除',
         onPress: () => {
-          setRecords(records.filter((r) => r.id !== id));
+          const updatedRecords = records.filter((r) => r.id !== id);
+          setRecords(updatedRecords);
+          
+          const totalPages = Math.ceil(updatedRecords.length / recordsPerPage);
+          if (currentPage > totalPages) {
+            setCurrentPage(totalPages > 0 ? totalPages : 1);
+          }
         },
       },
     ]);
@@ -368,6 +382,14 @@ export default function App() {
     return base64;
   };
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" />
@@ -394,14 +416,19 @@ export default function App() {
           photos={photos}
           onTakePhoto={handleTakePhoto}
           onPickPhoto={handlePickPhoto}
+      
           onRemovePhoto={removePhotoAt}
           onAddRecord={handleAddRecord}
         />
 
         <RecordList
-          records={records}
+          records={currentRecords}
           onDeleteRecord={handleDeleteRecord}
           onGeneratePDF={handleGeneratePDF}
+          totalRecords={records.length}
+          recordsPerPage={recordsPerPage}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
         />
 
         <View style={styles.bottomSpacer} />
