@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const RecordCard = ({ item, index, onDelete, onEdit }) => {
+const RecordCard = ({ item, index, onDelete, onEdit, onLongPress, isSelected, isSelectionMode }) => {
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
@@ -14,11 +14,24 @@ const RecordCard = ({ item, index, onDelete, onEdit }) => {
     : require('../assets/icon.png');
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity 
+      style={[styles.card, isSelected && styles.selectedCard]} 
+      onLongPress={() => onLongPress()}
+      activeOpacity={0.8}
+    >
       <View style={styles.mainContainer}>
         <View style={styles.indexContainer}>
           <Text style={styles.indexText}>{index}</Text>
         </View>
+        {isSelectionMode && (
+          <View style={styles.checkboxContainer}>
+            <View style={[styles.checkbox, isSelected && styles.checkboxChecked]}>
+              {isSelected && (
+                <MaterialIcons name="check" size={16} color="#fff" />
+              )}
+            </View>
+          </View>
+        )}
         <Image
           source={imageSource}
           style={styles.photo}
@@ -29,15 +42,17 @@ const RecordCard = ({ item, index, onDelete, onEdit }) => {
           <Text style={styles.timestamp}>{formatTimestamp(item.id)}</Text>
         </View>
       </View>
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity onPress={() => onEdit(item.id)} style={styles.actionButton}>
-          <MaterialIcons name="edit" size={22} color="#666" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => onDelete(item.id)} style={styles.actionButton}>
-          <MaterialIcons name="delete" size={22} color="#f44336" />
-        </TouchableOpacity>
-      </View>
-    </View>
+      {!isSelectionMode && (
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity onPress={() => onEdit(item.id)} style={styles.actionButton}>
+            <MaterialIcons name="edit" size={22} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onDelete(item.id)} style={styles.actionButton}>
+            <MaterialIcons name="delete" size={22} color="#f44336" />
+          </TouchableOpacity>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 };
 
@@ -55,6 +70,28 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+  },
+  selectedCard: {
+    backgroundColor: '#e3f2fd',
+    borderWidth: 2,
+    borderColor: '#2196F3',
+  },
+  checkboxContainer: {
+    marginRight: 10,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxChecked: {
+    backgroundColor: '#2196F3',
+    borderColor: '#2196F3',
   },
   mainContainer: {
     flexDirection: 'row',

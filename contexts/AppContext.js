@@ -159,6 +159,18 @@ export const AppProvider = ({ children }) => {
     ]);
   };
 
+  const handleDeleteRecords = (ids) => {
+    if (ids.length === 0) return;
+    
+    // Check if any of the deleted records is the one being edited
+    const anyEditingRecordDeleted = ids.includes(editingRecordId);
+    if (anyEditingRecordDeleted) {
+      handleCancelEdit();
+    }
+    
+    setRecords(records.filter((r) => !ids.includes(r.id)));
+  };
+
   const handleDeleteLocationFromHistory = (locationToDelete) => {
     setLocationHistory(locationHistory.filter(location => location !== locationToDelete));
   };
@@ -185,6 +197,7 @@ export const AppProvider = ({ children }) => {
     handleCancelEdit,
     handleSaveRecord,
     handleDeleteRecord,
+    handleDeleteRecords,
     handleDeleteLocationFromHistory,
     handleDeleteItemTypeFromHistory,
     clearForm,

@@ -20,9 +20,11 @@ import * as FileSystem from 'expo-file-system/legacy';
 const ITEMS_PER_PAGE = 10;
 
 const ArchiveScreen = () => {
-  const { records, handleDeleteRecord, handleStartEdit } = useContext(AppContext);
+  const { records, handleDeleteRecord, handleDeleteRecords, handleStartEdit } = useContext(AppContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
   const navigation = useNavigation();
   const scrollViewRef = useRef(null);
 
@@ -49,8 +51,66 @@ const ArchiveScreen = () => {
   }, [records, searchQuery]);
 
   const onEdit = (id) => {
+    if (isSelectionMode) {
+      toggleSelect(id);
+      return;
+    }
     handleStartEdit(id, scrollViewRef); // Pass the ref to scroll
     navigation.navigate('数据录入'); // Switch to capture tab
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prevSelected => {
+      if (prevSelected.includes(id)) {
+        return prevSelected.filter(selectedId => selectedId !== id);
+      } else {
+        return [...prevSelected, id];
+      }
+    });
+  };
+
+  const handleLongPress = (id) => {
+    if (!isSelectionMode) {
+      setIsSelectionMode(true);
+      setSelectedIds([id]);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === recordsToShow.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(recordsToShow.map(item => item.id));
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) {
+      Alert.alert('提示', '请先选择要删除的记录');
+      return;
+    }
+
+    Alert.alert(
+      '确认删除',
+      `确定要删除选中的 ${selectedIds.length} 条记录吗？此操作无法撤销。`,
+      [
+        { text: '取消', style: 'cancel' },
+        { 
+          text: '删除', 
+          style: 'destructive',
+          onPress: () => {
+            handleDeleteRecords(selectedIds);
+            setSelectedIds([]);
+            setIsSelectionMode(false);
+          }
+        }
+      ]
+    );
+  };
+
+  const exitSelectionMode = () => {
+    setIsSelectionMode(false);
+    setSelectedIds([]);
   };
   
   const loadMore = () => {
@@ -296,19 +356,36 @@ const ArchiveScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="按名称或地点搜索..."
-              placeholderTextColor="#aaa"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              clearButtonMode="while-editing"
-            />
-            <TouchableOpacity style={styles.pdfButton} onPress={handleGeneratePDF}>
-                <Text style={styles.pdfButtonText}>导出 PDF</Text>
+        {isSelectionMode ? (
+          <View style={styles.selectionHeader}>
+            <TouchableOpacity style={styles.cancelButton} onPress={exitSelectionMode}>
+              <Text style={styles.cancelButtonText}>取消</Text>
             </TouchableOpacity>
-        </View>
+            <Text style={styles.selectionCountText}>已选择 {selectedIds.length} 项</Text>
+            <TouchableOpacity style={styles.selectAllButton} onPress={handleSelectAll}>
+              <Text style={styles.selectAllButtonText}>
+                {selectedIds.length === recordsToShow.length ? '取消全选' : '全选'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteSelectedButton} onPress={handleDeleteSelected}>
+              <Text style={styles.deleteSelectedButtonText}>删除</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.header}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="按名称或地点搜索..."
+                placeholderTextColor="#aaa"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                clearButtonMode="while-editing"
+              />
+              <TouchableOpacity style={styles.pdfButton} onPress={handleGeneratePDF}>
+                  <Text style={styles.pdfButtonText}>导出 PDF</Text>
+              </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.totalContainer}>
           <Text style={styles.totalText}>总数据量: {filteredRecords.length}</Text>
@@ -323,7 +400,10 @@ const ArchiveScreen = () => {
               item={item} 
               index={item.originalIndex + 1} 
               onDelete={handleDeleteRecord} 
-              onEdit={onEdit} 
+              onEdit={onEdit}
+              onLongPress={() => handleLongPress(item.id)}
+              isSelected={selectedIds.includes(item.id)}
+              isSelectionMode={isSelectionMode}
             />
           )}
           ListEmptyComponent={
@@ -389,6 +469,55 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pdfButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  selectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  cancelButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  cancelButtonText: {
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  selectionCountText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  selectAllButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  selectAllButtonText: {
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  deleteSelectedButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#f44336',
+    borderRadius: 6,
+  },
+  deleteSelectedButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
