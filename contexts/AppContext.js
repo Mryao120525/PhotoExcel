@@ -16,6 +16,7 @@ export const AppProvider = ({ children }) => {
   // Data and UI states
   const [records, setRecords] = useState([]);
   const [locationHistory, setLocationHistory] = useState([]);
+  const [itemTypeHistory, setItemTypeHistory] = useState([]);
   const [lastMajorLocation, setLastMajorLocation] = useState('');
   const [editingRecordId, setEditingRecordId] = useState(null);
   const isInitialMount = useRef(true);
@@ -31,6 +32,10 @@ export const AppProvider = ({ children }) => {
         const storedHistory = await AsyncStorage.getItem('locationHistory');
         if (storedHistory !== null) {
           setLocationHistory(JSON.parse(storedHistory));
+        }
+        const storedItemTypeHistory = await AsyncStorage.getItem('itemTypeHistory');
+        if (storedItemTypeHistory !== null) {
+          setItemTypeHistory(JSON.parse(storedItemTypeHistory));
         }
         const storedLastName = await AsyncStorage.getItem('lastMajorLocation');
         if (storedLastName !== null) {
@@ -54,13 +59,14 @@ export const AppProvider = ({ children }) => {
       try {
         await AsyncStorage.setItem('records', JSON.stringify(records));
         await AsyncStorage.setItem('locationHistory', JSON.stringify(locationHistory));
+        await AsyncStorage.setItem('itemTypeHistory', JSON.stringify(itemTypeHistory));
         await AsyncStorage.setItem('lastMajorLocation', lastMajorLocation);
       } catch (e) {
         console.error('Failed to save data to storage', e);
       }
     };
     saveData();
-  }, [records, locationHistory, lastMajorLocation]);
+  }, [records, locationHistory, itemTypeHistory, lastMajorLocation]);
 
   // --- Form & CRUD Logic ---
   const clearForm = () => {
@@ -118,6 +124,12 @@ export const AppProvider = ({ children }) => {
         const updatedHistory = [minorLocation, ...locationHistory.filter(l => l !== minorLocation)].slice(0, 5);
         setLocationHistory(updatedHistory);
     }
+    
+    // Update item type history for itemName
+    if (itemName) {
+        const updatedItemTypeHistory = [itemName, ...itemTypeHistory.filter(l => l !== itemName)].slice(0, 5);
+        setItemTypeHistory(updatedItemTypeHistory);
+    }
 
     // Save last major location name
     if (majorLocation) {
@@ -151,6 +163,10 @@ export const AppProvider = ({ children }) => {
     setLocationHistory(locationHistory.filter(location => location !== locationToDelete));
   };
   
+  const handleDeleteItemTypeFromHistory = (itemTypeToDelete) => {
+    setItemTypeHistory(itemTypeHistory.filter(itemType => itemType !== itemTypeToDelete));
+  };
+  
   const value = {
     // State
     majorLocation, setMajorLocation,
@@ -161,6 +177,7 @@ export const AppProvider = ({ children }) => {
     photos, setPhotos,
     records, setRecords,
     locationHistory, setLocationHistory,
+    itemTypeHistory, setItemTypeHistory,
     editingRecordId, setEditingRecordId,
 
     // Functions
@@ -169,6 +186,7 @@ export const AppProvider = ({ children }) => {
     handleSaveRecord,
     handleDeleteRecord,
     handleDeleteLocationFromHistory,
+    handleDeleteItemTypeFromHistory,
     clearForm,
   };
 

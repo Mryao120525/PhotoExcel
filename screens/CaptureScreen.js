@@ -20,10 +20,12 @@ const CaptureScreen = () => {
     quantity, setQuantity,
     photos, setPhotos,
     locationHistory,
+    itemTypeHistory,
     editingRecordId,
     handleSaveRecord,
     handleCancelEdit,
     handleDeleteLocationFromHistory,
+    handleDeleteItemTypeFromHistory,
   } = useContext(AppContext);
   
   const [showToast, setShowToast] = useState(false);
@@ -137,6 +139,8 @@ const CaptureScreen = () => {
           onSaveRecord={onSave}
           editingRecordId={editingRecordId}
           onCancelEdit={handleCancelEdit}
+          itemTypeHistory={itemTypeHistory}
+          handleDeleteItemTypeFromHistory={handleDeleteItemTypeFromHistory}
         />
         <View style={{ height: 40 }} />
       </ScrollView>

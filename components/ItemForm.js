@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  Modal,
+  FlatList,
 } from 'react-native';
 
 const ItemForm = ({
@@ -22,8 +24,16 @@ const ItemForm = ({
   onSaveRecord,
   editingRecordId,
   onCancelEdit,
+  itemTypeHistory,
+  handleDeleteItemTypeFromHistory,
 }) => {
   const isEditing = editingRecordId !== null;
+  const [showItemTypeDropdown, setShowItemTypeDropdown] = useState(false);
+
+  const handleSelectItemType = (type) => {
+    setItemName(type);
+    setShowItemTypeDropdown(false);
+  };
 
   return (
     <View style={styles.sectionItem}>
@@ -39,13 +49,46 @@ const ItemForm = ({
       />
 
       <Text style={styles.label}>具体类型</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="请输入具体类型"
-        placeholderTextColor="#ccc"
-        value={itemName}
-        onChangeText={setItemName}
-      />
+      <View style={styles.inputWithDropdown}>
+        <TextInput
+          style={styles.input}
+          placeholder="请输入具体类型"
+          placeholderTextColor="#ccc"
+          value={itemName}
+          onChangeText={setItemName}
+        />
+        <TouchableOpacity 
+          style={styles.dropdownButton} 
+          onPress={() => setShowItemTypeDropdown(!showItemTypeDropdown)}
+        >
+          <Text style={styles.dropdownButtonText}>▼</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {showItemTypeDropdown && (
+        <View style={styles.dropdownMenu}>
+          {itemTypeHistory && itemTypeHistory.length > 0 ? (
+            itemTypeHistory.map((type, index) => (
+              <View key={index} style={styles.dropdownItemWrapper}>
+                <TouchableOpacity 
+                  style={styles.dropdownItem} 
+                  onPress={() => handleSelectItemType(type)}
+                >
+                  <Text style={styles.dropdownItemText}>{type}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.deleteDropdownItem} 
+                  onPress={() => handleDeleteItemTypeFromHistory(type)}
+                >
+                  <Text style={styles.deleteDropdownItemText}>x</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noDropdownItems}>暂无常用类型，请先添加</Text>
+          )}
+        </View>
+      )}
 
       <Text style={styles.label}>数量</Text>
       <TextInput
@@ -233,6 +276,64 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  inputWithDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dropdownButton: {
+    position: 'absolute',
+    right: 10,
+    padding: 10,
+  },
+  dropdownButtonText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  dropdownMenu: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    marginTop: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    maxHeight: 200,
+  },
+  dropdownItemWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flex: 1,
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  deleteDropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  deleteDropdownItemText: {
+    fontSize: 14,
+    color: '#f44336',
+    fontWeight: 'bold',
+  },
+  noDropdownItems: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
   },
 });
 
