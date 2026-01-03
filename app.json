@@ -16,7 +16,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "需要访问相机来拍摄古建筑文物照片",
-        "NSPhotoLibraryUsageDescription": "需要访问相册来选择古建筑文物照片"
+        "NSPhotoLibraryUsageDescription": "需要访问相册来选择和保存古建筑文物照片",
+        "NSPhotoLibraryAddUsageDescription": "需要访问相册来保存古建筑文物照片"
       }
     },
     "android": {

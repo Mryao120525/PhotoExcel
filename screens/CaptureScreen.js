@@ -9,6 +9,7 @@ import SuccessToast from '../components/SuccessToast';
 
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
 
 const CaptureScreen = () => {
   const {
@@ -43,6 +44,7 @@ const CaptureScreen = () => {
 
   const saveHighResPhoto = async (uri) => {
     try {
+      // 1. 保存到应用内部
       const dir = `${FileSystem.documentDirectory}photos/`;
       const dirInfo = await FileSystem.getInfoAsync(dir);
       if (!dirInfo.exists) {
@@ -51,19 +53,32 @@ const CaptureScreen = () => {
       const fileName = `photo_${Date.now()}.jpg`;
       const dest = dir + fileName;
       await FileSystem.copyAsync({ from: uri, to: dest });
+      
+      // 2. 同时保存到本地图库
+      await MediaLibrary.saveToLibraryAsync(uri);
+      
       return dest;
     } catch (err) {
-      console.error('Failed to save high-res photo:', err);
+      console.error('Failed to save photo:', err);
       return uri; // fallback to original uri
     }
   };
 
   const handleTakePhoto = async () => {
+    // 请求相机权限
     const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
     if (cameraPermission.status !== 'granted') {
       Alert.alert('需要权限', '需要相机权限才能拍照。');
       return;
     }
+    
+    // 请求媒体库权限
+    const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
+    if (mediaLibraryPermission.status !== 'granted') {
+      Alert.alert('需要权限', '需要相册权限才能保存照片。');
+      return;
+    }
+    
     const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
     if (!result.canceled) {
       const savedUri = await saveHighResPhoto(result.assets[0].uri);
@@ -72,11 +87,13 @@ const CaptureScreen = () => {
   };
 
   const handlePickPhoto = async () => {
-    const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (libraryPermission.status !== 'granted') {
-      Alert.alert('需要权限', '需要相册权限才能选择照片。');
+    // 请求媒体库权限（选择照片和保存照片都需要）
+    const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
+    if (mediaLibraryPermission.status !== 'granted') {
+      Alert.alert('需要权限', '需要相册权限才能选择和保存照片。');
       return;
     }
+    
     const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.7 });
     if (!result.canceled) {
         const uris = await Promise.all(
@@ -145,4 +162,3 @@ const styles = StyleSheet.create({
 });
 
 export default CaptureScreen;
-
