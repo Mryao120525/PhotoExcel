@@ -17,14 +17,17 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 
+const ITEMS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
 const ITEMS_PER_PAGE = 10;
 
 const ArchiveScreen = () => {
   const { records, handleDeleteRecord, handleDeleteRecords, handleStartEdit } = useContext(AppContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [showPageSizeOptions, setShowPageSizeOptions] = useState(false);
   const navigation = useNavigation();
   const scrollViewRef = useRef(null);
 
@@ -62,8 +65,10 @@ const ArchiveScreen = () => {
   const toggleSelect = (id) => {
     setSelectedIds(prevSelected => {
       if (prevSelected.includes(id)) {
+        // Remove item from selection
         return prevSelected.filter(selectedId => selectedId !== id);
       } else {
+        // Add item to selection
         return [...prevSelected, id];
       }
     });
@@ -71,6 +76,7 @@ const ArchiveScreen = () => {
 
   const handleLongPress = (id) => {
     if (!isSelectionMode) {
+      // Enter selection mode with the pressed item selected
       setIsSelectionMode(true);
       setSelectedIds([id]);
     }
@@ -82,6 +88,12 @@ const ArchiveScreen = () => {
     } else {
       setSelectedIds(recordsToShow.map(item => item.id));
     }
+  };
+
+  const handleInvertSelection = () => {
+    const allIds = recordsToShow.map(item => item.id);
+    const invertedIds = allIds.filter(id => !selectedIds.includes(id));
+    setSelectedIds(invertedIds);
   };
 
   const handleDeleteSelected = () => {
@@ -114,7 +126,14 @@ const ArchiveScreen = () => {
   };
   
   const loadMore = () => {
-    setVisibleCount(prevCount => prevCount + ITEMS_PER_PAGE);
+    setVisibleCount(prevCount => prevCount + itemsPerPage);
+  };
+
+  const handlePageSizeChange = (size) => {
+    setItemsPerPage(size);
+    // Reset visible count to the new page size
+    setVisibleCount(size);
+    setShowPageSizeOptions(false);
   };
   
   const handleGeneratePDF = async () => {
@@ -367,6 +386,9 @@ const ArchiveScreen = () => {
                 {selectedIds.length === recordsToShow.length ? '取消全选' : '全选'}
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.invertSelectionButton} onPress={handleInvertSelection}>
+              <Text style={styles.invertSelectionButtonText}>反选</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.deleteSelectedButton} onPress={handleDeleteSelected}>
               <Text style={styles.deleteSelectedButtonText}>删除</Text>
             </TouchableOpacity>
@@ -389,6 +411,27 @@ const ArchiveScreen = () => {
 
         <View style={styles.totalContainer}>
           <Text style={styles.totalText}>总数据量: {filteredRecords.length}</Text>
+          <View style={styles.pageSizeContainer}>
+            <TouchableOpacity 
+              style={styles.pageSizeButton} 
+              onPress={() => setShowPageSizeOptions(!showPageSizeOptions)}
+            >
+              <Text style={styles.pageSizeButtonText}>每页显示: {itemsPerPage}</Text>
+            </TouchableOpacity>
+            {showPageSizeOptions && (
+              <View style={styles.pageSizeOptions}>
+                {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                  <TouchableOpacity 
+                    key={option}
+                    style={styles.pageSizeOption}
+                    onPress={() => handlePageSizeChange(option)}
+                  >
+                    <Text style={styles.pageSizeOptionText}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
         </View>
 
         <FlatList
@@ -472,6 +515,49 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 10,
+  },
+  pageSizeContainer: {
+    position: 'relative',
+  },
+  pageSizeButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  pageSizeButtonText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  pageSizeOptions: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    marginTop: 4,
+    zIndex: 1000,
+    elevation: 5,
+  },
+  pageSizeOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  pageSizeOptionText: {
+    fontSize: 14,
+    color: '#333',
+  },
   selectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -519,6 +605,18 @@ const styles = StyleSheet.create({
   },
   deleteSelectedButtonText: {
     color: '#fff',
+    fontWeight: 'bold',
+  },
+  invertSelectionButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  invertSelectionButtonText: {
+    color: '#333',
     fontWeight: 'bold',
   },
   emptyContainer: {

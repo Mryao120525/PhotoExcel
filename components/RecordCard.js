@@ -16,7 +16,8 @@ const RecordCard = ({ item, index, onDelete, onEdit, onLongPress, isSelected, is
   return (
     <TouchableOpacity 
       style={[styles.card, isSelected && styles.selectedCard]} 
-      onLongPress={() => onLongPress()}
+      onLongPress={() => onLongPress(item.id)}
+      onPress={() => isSelectionMode && onEdit(item.id)} // Click to toggle selection in selection mode
       activeOpacity={0.8}
     >
       <View style={styles.mainContainer}>
@@ -24,13 +25,17 @@ const RecordCard = ({ item, index, onDelete, onEdit, onLongPress, isSelected, is
           <Text style={styles.indexText}>{index}</Text>
         </View>
         {isSelectionMode && (
-          <View style={styles.checkboxContainer}>
+          <TouchableOpacity 
+            style={styles.checkboxContainer}
+            onPress={() => onEdit(item.id)} // Click checkbox to toggle selection
+            activeOpacity={0.7}
+          >
             <View style={[styles.checkbox, isSelected && styles.checkboxChecked]}>
               {isSelected && (
                 <MaterialIcons name="check" size={16} color="#fff" />
               )}
             </View>
-          </View>
+          </TouchableOpacity>
         )}
         <Image
           source={imageSource}
