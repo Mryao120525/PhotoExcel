@@ -28,8 +28,17 @@ const ArchiveScreen = () => {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
   const [showPageSizeOptions, setShowPageSizeOptions] = useState(false);
+  const [showLocationFilter, setShowLocationFilter] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const navigation = useNavigation();
   const scrollViewRef = useRef(null);
+
+  // Extract unique locations from records
+  const uniqueLocations = useMemo(() => {
+    const locations = new Set();
+    records.forEach(record => locations.add(record.majorLocation));
+    return Array.from(locations).sort();
+  }, [records]);
 
   const filteredRecords = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -41,17 +50,25 @@ const ArchiveScreen = () => {
       originalIndex: index
     }));
 
-    if (!query) {
-      return indexedRecords;
+    // Apply location filter first
+    if (selectedLocation) {
+      indexedRecords = indexedRecords.filter(record => 
+        record.majorLocation === selectedLocation
+      );
     }
 
-    return indexedRecords.filter(record =>
-      record.majorLocation.toLowerCase().includes(query) ||
-      record.minorLocation.toLowerCase().includes(query) ||
-      record.specificName.toLowerCase().includes(query) ||
-      record.itemName.toLowerCase().includes(query)
-    );
-  }, [records, searchQuery]);
+    // Apply search query
+    if (query) {
+      indexedRecords = indexedRecords.filter(record =>
+        record.majorLocation.toLowerCase().includes(query) ||
+        record.minorLocation.toLowerCase().includes(query) ||
+        record.specificName.toLowerCase().includes(query) ||
+        record.itemName.toLowerCase().includes(query)
+      );
+    }
+
+    return indexedRecords;
+  }, [records, searchQuery, selectedLocation]);
 
   const onEdit = (id) => {
     if (isSelectionMode) {
@@ -394,19 +411,58 @@ const ArchiveScreen = () => {
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={styles.header}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="按名称或地点搜索..."
-                placeholderTextColor="#aaa"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                clearButtonMode="while-editing"
-              />
-              <TouchableOpacity style={styles.pdfButton} onPress={handleGeneratePDF}>
-                  <Text style={styles.pdfButtonText}>导出 PDF</Text>
-              </TouchableOpacity>
-          </View>
+          <>
+            <View style={styles.header}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="按名称或地点搜索..."
+                  placeholderTextColor="#aaa"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  clearButtonMode="while-editing"
+                />
+                <View style={styles.headerButtons}>
+                  <TouchableOpacity 
+                    style={styles.locationFilterButton} 
+                    onPress={() => setShowLocationFilter(!showLocationFilter)}
+                  >
+                    <Text style={styles.locationFilterButtonText}>
+                      {selectedLocation ? `地点: ${selectedLocation}` : '地点筛选'}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.pdfButton} onPress={handleGeneratePDF}>
+                      <Text style={styles.pdfButtonText}>导出 PDF</Text>
+                  </TouchableOpacity>
+                </View>
+            </View>
+            
+            {/* Location Filter Options */}
+            {showLocationFilter && (
+              <View style={styles.filterOptions}>
+                <TouchableOpacity 
+                  style={[styles.filterOption, !selectedLocation && styles.activeFilterOption]} 
+                  onPress={() => {
+                    setSelectedLocation(null);
+                    setShowLocationFilter(false);
+                  }}
+                >
+                  <Text style={styles.filterOptionText}>全部地点</Text>
+                </TouchableOpacity>
+                {uniqueLocations.map((location, index) => (
+                  <TouchableOpacity 
+                    key={index}
+                    style={[styles.filterOption, selectedLocation === location && styles.activeFilterOption]} 
+                    onPress={() => {
+                      setSelectedLocation(location);
+                      setShowLocationFilter(false);
+                    }}
+                  >
+                    <Text style={styles.filterOptionText}>{location}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
         )}
 
         <View style={styles.totalContainer}>
@@ -483,6 +539,53 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDEDED',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationFilterButton: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  locationFilterButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  filterOptions: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 15,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  filterOption: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    margin: 4,
+    backgroundColor: '#f0f0f0',
+  },
+  activeFilterOption: {
+    backgroundColor: '#4CAF50',
+  },
+  filterOptionText: {
+    color: '#333',
+    fontSize: 14,
+  },
+  activeFilterOptionText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   totalContainer: {
     paddingBottom: 10,
