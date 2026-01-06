@@ -184,7 +184,7 @@ const ArchiveScreen = () => {
       /* 标准A4页面设置 */
       @page {
         size: A4 portrait;
-        margin: 8mm 10mm 8mm 10mm; /* 上下8mm，左右10mm的边距，确保内容不紧贴边缘 */
+        margin: 8mm 15mm 8mm 15mm; /* 上下8mm，左右15mm的边距，确保表格距离纸张边缘有5mm左右间距 */
         @top-center { content: "古建筑文物记录"; font-size: 16pt; font-weight: bold; }
         @bottom-right { content: "页码 " counter(page) " / " counter(pages); }
       }
@@ -283,6 +283,12 @@ const ArchiveScreen = () => {
         padding: 4px;
       }
       
+      /* 表格容器 */
+      .table-container {
+        margin-left: 5mm;
+        margin-right: 5mm;
+      }
+      
       /* 调整列宽以适应A4页面 */
       col:nth-child(1) { width: 6%; }    /* 编号 */
       col:nth-child(2) { width: 13%; }   /* 景点名称 */
@@ -324,7 +330,7 @@ const ArchiveScreen = () => {
       
       // 获取扫描方式数据
       const scanningMethodsText = record.scanningMethods && record.scanningMethods.length > 0 
-        ? record.scanningMethods.join(', ') 
+        ? record.scanningMethods.join('+') 
         : '-';
 
       tableRows += `

@@ -122,7 +122,7 @@ const ItemForm = ({
         onPress={() => setShowScanningMethodsModal(true)}
       >
         <Text style={styles.multiSelectButtonText}>
-          {scanningMethods.length > 0 ? scanningMethods.join(', ') : '请选择扫描方式'}
+          {scanningMethods.length > 0 ? scanningMethods.join('+') : '请选择扫描方式'}
         </Text>
         <Text style={styles.multiSelectButtonArrow}>▼</Text>
       </TouchableOpacity>
