@@ -19,6 +19,7 @@ const CaptureScreen = () => {
     itemName, setItemName,
     quantity, setQuantity,
     photos, setPhotos,
+    scanningMethods, setScanningMethods,
     locationHistory,
     itemTypeHistory,
     editingRecordId,
@@ -133,6 +134,8 @@ const CaptureScreen = () => {
           quantity={quantity}
           setQuantity={setQuantity}
           photos={photos}
+          scanningMethods={scanningMethods}
+          setScanningMethods={setScanningMethods}
           onTakePhoto={handleTakePhoto}
           onPickPhoto={handlePickPhoto}
           onRemovePhoto={removePhotoAt}

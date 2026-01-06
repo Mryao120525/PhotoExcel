@@ -285,12 +285,13 @@ const ArchiveScreen = () => {
       
       /* 调整列宽以适应A4页面 */
       col:nth-child(1) { width: 6%; }    /* 编号 */
-      col:nth-child(2) { width: 14%; }   /* 景点名称 */
-      col:nth-child(3) { width: 14%; }   /* 景点区域 */
-      col:nth-child(4) { width: 17%; }   /* 具体名称 */
-      col:nth-child(5) { width: 17%; }   /* 具体类型 */
-      col:nth-child(6) { width: 20%; }   /* 照片 */
+      col:nth-child(2) { width: 13%; }   /* 景点名称 */
+      col:nth-child(3) { width: 13%; }   /* 景点区域 */
+      col:nth-child(4) { width: 15%; }   /* 具体名称 */
+      col:nth-child(5) { width: 15%; }   /* 具体类型 */
+      col:nth-child(6) { width: 18%; }   /* 照片 */
       col:nth-child(7) { width: 12%; }   /* 数量 */
+      col:nth-child(8) { width: 18%; }   /* 扫描方式 */
     `;
 
     let tableRows = '';
@@ -320,6 +321,11 @@ const ArchiveScreen = () => {
         }
       }
       photosHtml += '</div>';
+      
+      // 获取扫描方式数据
+      const scanningMethodsText = record.scanningMethods && record.scanningMethods.length > 0 
+        ? record.scanningMethods.join(', ') 
+        : '-';
 
       tableRows += `
         <tr>
@@ -330,6 +336,7 @@ const ArchiveScreen = () => {
           <td>${record.itemName}</td>
           <td class="photos-cell">${photosHtml}</td>
           <td>${record.quantity}</td>
+          <td>${scanningMethodsText}</td>
         </tr>
       `;
     }
@@ -346,7 +353,7 @@ const ArchiveScreen = () => {
         <h1>古建筑文物记录</h1>
         <div class="table-container">
           <table>
-            <col><col><col><col><col><col><col>
+            <col><col><col><col><col><col><col><col>
             <thead>
               <tr>
                 <th>编号</th>
@@ -356,6 +363,7 @@ const ArchiveScreen = () => {
                 <th>具体类型</th>
                 <th>照片</th>
                 <th>数量</th>
+                <th>扫描方式</th>
               </tr>
             </thead>
             <tbody>${tableRows}</tbody>

@@ -12,6 +12,7 @@ export const AppProvider = ({ children }) => {
   const [itemName, setItemName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [photos, setPhotos] = useState([]);
+  const [scanningMethods, setScanningMethods] = useState([]);
 
   // Data and UI states
   const [records, setRecords] = useState([]);
@@ -77,6 +78,7 @@ export const AppProvider = ({ children }) => {
     setItemName('');
     setQuantity('');
     setPhotos([]);
+    setScanningMethods([]);
   };
 
   const handleStartEdit = (id, scrollRef = null) => {
@@ -88,6 +90,7 @@ export const AppProvider = ({ children }) => {
       setItemName(recordToEdit.itemName);
       setQuantity(recordToEdit.quantity);
       setPhotos(recordToEdit.photos);
+      setScanningMethods(recordToEdit.scanningMethods || []);
       setEditingRecordId(id);
       if (scrollRef && scrollRef.current && typeof scrollRef.current.scrollTo === 'function') {
         scrollRef.current.scrollTo({ y: 0, animated: true });
@@ -111,7 +114,7 @@ export const AppProvider = ({ children }) => {
       return false;
     }
 
-    const recordData = { majorLocation, minorLocation, specificName, itemName, quantity, photos };
+    const recordData = { majorLocation, minorLocation, specificName, itemName, quantity, photos, scanningMethods };
 
     if (editingRecordId) {
       setRecords(records.map((r) => (r.id === editingRecordId ? { ...r, ...recordData } : r)));
@@ -187,6 +190,7 @@ export const AppProvider = ({ children }) => {
     itemName, setItemName,
     quantity, setQuantity,
     photos, setPhotos,
+    scanningMethods, setScanningMethods,
     records, setRecords,
     locationHistory, setLocationHistory,
     itemTypeHistory, setItemTypeHistory,

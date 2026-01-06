@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Modal,
   FlatList,
+  ScrollView,
 } from 'react-native';
 
 const ItemForm = ({
@@ -26,9 +27,24 @@ const ItemForm = ({
   onCancelEdit,
   itemTypeHistory,
   handleDeleteItemTypeFromHistory,
+  scanningMethods,
+  setScanningMethods,
 }) => {
   const isEditing = editingRecordId !== null;
   const [showItemTypeDropdown, setShowItemTypeDropdown] = useState(false);
+  const [showScanningMethodsModal, setShowScanningMethodsModal] = useState(false);
+  
+  const scanningMethodsOptions = ['无人机', '手持扫描仪', '相机', '架站扫描仪'];
+  
+  const toggleScanningMethod = (method) => {
+    if (scanningMethods.includes(method)) {
+      setScanningMethods(scanningMethods.filter(m => m !== method));
+    } else {
+      if (scanningMethods.length < 4) {
+        setScanningMethods([...scanningMethods, method]);
+      }
+    }
+  };
 
   const handleSelectItemType = (type) => {
     setItemName(type);
@@ -99,6 +115,65 @@ const ItemForm = ({
         onChangeText={setQuantity}
         keyboardType="number-pad"
       />
+      
+      <Text style={styles.label}>扫描方式</Text>
+      <TouchableOpacity 
+        style={styles.multiSelectButton}
+        onPress={() => setShowScanningMethodsModal(true)}
+      >
+        <Text style={styles.multiSelectButtonText}>
+          {scanningMethods.length > 0 ? scanningMethods.join(', ') : '请选择扫描方式'}
+        </Text>
+        <Text style={styles.multiSelectButtonArrow}>▼</Text>
+      </TouchableOpacity>
+      <Text style={styles.multiSelectHint}>
+        已选择 {scanningMethods.length}/4 种方式
+      </Text>
+      
+      {/* Scanning Methods Modal */}
+      <Modal
+        visible={showScanningMethodsModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowScanningMethodsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>选择扫描方式</Text>
+            <Text style={styles.modalSubtitle}>最多选择4种方式</Text>
+            
+            <View style={styles.multiSelectOptions}>
+              {scanningMethodsOptions.map((method, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.multiSelectOption,
+                    scanningMethods.includes(method) && styles.multiSelectOptionSelected
+                  ]}
+                  onPress={() => toggleScanningMethod(method)}
+                >
+                  <Text style={[
+                    styles.multiSelectOptionText,
+                    scanningMethods.includes(method) && styles.multiSelectOptionTextSelected
+                  ]}>
+                    {method}
+                  </Text>
+                  {scanningMethods.includes(method) && (
+                    <Text style={styles.multiSelectOptionCheckmark}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            <TouchableOpacity
+              style={styles.modalConfirmButton}
+              onPress={() => setShowScanningMethodsModal(false)}
+            >
+              <Text style={styles.modalConfirmButtonText}>确定</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <Text style={styles.label}>照片</Text>
       {photos && photos.length > 0 ? (
@@ -155,6 +230,101 @@ const ItemForm = ({
 };
 
 const styles = StyleSheet.create({
+  multiSelectButton: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: '#333',
+    backgroundColor: '#fafafa',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  multiSelectButtonText: {
+    fontSize: 13,
+    color: '#333',
+    flex: 1,
+  },
+  multiSelectButtonArrow: {
+    fontSize: 10,
+    color: '#666',
+  },
+  multiSelectHint: {
+    fontSize: 11,
+    color: '#999',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    width: '85%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 15,
+  },
+  multiSelectOptions: {
+    marginBottom: 20,
+  },
+  multiSelectOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    marginBottom: 8,
+    backgroundColor: '#fafafa',
+  },
+  multiSelectOptionSelected: {
+    backgroundColor: '#E3F2FD',
+    borderColor: '#2196F3',
+  },
+  multiSelectOptionText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  multiSelectOptionTextSelected: {
+    color: '#2196F3',
+    fontWeight: 'bold',
+  },
+  multiSelectOptionCheckmark: {
+    fontSize: 16,
+    color: '#2196F3',
+    fontWeight: 'bold',
+  },
+  modalConfirmButton: {
+    backgroundColor: '#2196F3',
+    borderRadius: 6,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalConfirmButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   sectionItem: {
     backgroundColor: '#fff',
     borderRadius: 10,
